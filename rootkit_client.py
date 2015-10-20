@@ -81,7 +81,8 @@ def is_admin():
 def getNetworkIp():
     s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     s.connect(('google.at', 0))
-    return s.getsockname()[0]
+    #return s.getsockname()[0]
+    return "0.0.0.0"
 
 def start_socket(port):
     sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
