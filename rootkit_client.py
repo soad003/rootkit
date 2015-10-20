@@ -89,8 +89,11 @@ def start_socket(port):
     sock.bind(server_address)
     print "UPD Server is waiting for messages on port:", port
     while True:
-        data, address = sock.recvfrom(3)
-        print data
+        data, address = sock.recvfrom(20)
+        sys.stdout.write(data)
+        sys.stdout.flush()
+        if data == "_ENTER_":
+            print ""
 code = 0
 host = ""
 start_udp_socket = False
