@@ -74,7 +74,11 @@ def print_usage():
 
 def is_admin():
     if not os.geteuid()==0:
-        sys.exit("\nYou must be root to run the application with this option, please use sudo and try again.\n")  
+        sys.exit("\nYou must be root to run the application with this option, please use sudo and try again.\n")
+
+def is_host_set():
+    if host == "": 
+        sys.exit("\nAdd hostname as parameter.\n")  
 
 def start_socket(port):
     sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
@@ -118,6 +122,7 @@ def main ():
                    print "backdoor open on port 6666"
 
     	is_admin()
+        is_host_set();
     	send_message(host, code)
     	if listen:
     		start_socket(1337)
