@@ -88,13 +88,45 @@ In the following we want to explore how to make a linux kernel rootkit. As the d
 
 \section{Implementation}
 \subsection{Keylogging}
-This section deals about keylogging in linux kernel. Keylogging describes the process of intercepting all input keys from a keyboard. Our rootkit intercept all keys and send them to a server. It is possible to activate and deactivate the keylogging function.
-To implement a keylogger in the linux kernel you must register a keyboard notifier. 
+This section deals about keylogging in linux kernel. Keylogging describes the process of intercepting all inputkeys from a keyboard. Our rootkit intercepts all keys and sends them to a server. It is possible to activate and deactivate the keylogging function with a magic package, see \ref{sec:magicpackage}. 
+To implement a keylogger in the linux kernel you must register a keyboard notifier.
+
+\begin{lstlisting}
+	register_keyboard_notifier(&keyboard_notifier);
+\end{lstlisting}
+
+The keyboard notifier stores the \lstinline{keyboard_hook} method which will be called on each key press. This function gets a keyboard keycode as input, to filter out the associated character we use two arrays with the mapping for the american keyboard layout. The first one is the mapping without \lstinline{SHIFT} and the secound is with \lstinline{SHIFT} pressed.
 
 
 \subsection{Backdoor}
 \subsection{Hiding}
+
 \subsection{Networking and Activation}
+\label{sec:magicpackage}
+To communicate with the rootkit two methods are used.
+\begin{itemize}
+	\item ICMP Packages
+	\item UDP Sockets
+\end{itemize}
+\subsubsection{ICMP Packages}
+To activate the keylogger, hide the rootkit modul or open a backdoor shell with root access magic packages are used. We used a normal ping package where the \lstinline{code} is the same as the \lstinline{id}. The following values are used for code and id to assign the descriped functionality.
+\begin{itemize}
+	\item[122:] \lstinline{KEYLOGGER_ACTIVATION_CODE}
+	\item[123:] \lstinline{KEYLOGGER_DEACTIVATION_CODE}
+	\item[124:] \lstinline{HIDEMODULE_ACTIVATION_CODE}
+	\item[125:] \lstinline{HIDEMODULE_DEACTIVATION_CODE}
+	\item[126:] \lstinline{BACKDOOR_ACTIVATION_CODE}
+\end{itemize}
+
+To catch the packages a new \lstinline{netfilter_hook} is added with the netfilter libary. 
+\begin{lstlisting}
+	nf_register_hook(&netfilter_hook);
+\end{lstlisting}
+
+The netfilter hook catches all icmp packages for the evaluation only packages the already defined properties are used. 
+
+\subsubsection{UPD Sockets}
+For sending the keys to the client and for controlling the server with the backdoor shell, UPD datagram packages are used.
 
 \section{Conclusion}
 
