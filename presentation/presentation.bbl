@@ -1,0 +1,14 @@
+\begin{thebibliography}{1}
+
+\bibitem{Paar-Christof}
+Christof Paar and Jan Pelzl.
+\newblock {\em Understanding cryptography: a textbook for students and
+  practitioners}.
+\newblock Springer Science \& Business Media, 2009.
+
+\bibitem{Zenner-Erik}
+Erik Zenner.
+\newblock On cryptographic properties of lfsr-based pseudorandom generators.
+\newblock 2005.
+
+\end{thebibliography}
