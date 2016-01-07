@@ -82,7 +82,7 @@
 
 \section{Introduction}
 
-This work aims at developing a toy Linux kernel rootkit with basic keylogging and backdoor capabilities. A \emph{rootkit} is usually a piece of malicious software designed to give an attacker some kind of privileged access (root) to a system while masking it's existence on the system. We choose two very basic but popular a privileged tasks for a rootkit to implement. The first creates a simple \emph{backdoor}, that means every attacker can span a shell, with root access, on demand and connect to it without any knowledge of user or root credentials. That means the attacker has full control over the infected machine. The second task we implemented is a keylogger that sends every keystroke to the attacker. Such a keylogger gives the attacker the possibility to steal passwords and account information and therefore the identity of the attacked user.  
+This work aims at developing a toy Linux kernel rootkit with basic keylogging and backdoor capabilities. A \emph{rootkit} is usually a piece of malicious software designed to give an attacker some kind of privileged access (root) to a system while masking its existence on the system. We choose two very basic but popular privileged tasks for a rootkit to implement. The first creates a simple \emph{backdoor}, that means every attacker can span a shell, with root access, on demand and connect to it without any knowledge of user or root credentials. That means the attacker has full control over the infected machine. The second task we implemented is a keylogger that sends every keystroke to the attacker. Such a keylogger gives the attacker the possibility to steal passwords, account information and therefore the identity of the attacked user.  
 
 In the remaining part of this section we want to give a basic introduction into kernel modules and why we used them. In Section \ref{sec:impl} we talk about the actual implementation of the features in detail. Section \ref{sec:usage} sketches the usage in a brief fashion. After that, in Section \ref{sec:conc} we give a brief summary and conclusion. 
 
@@ -93,7 +93,7 @@ Almost every modern operating system has some sort of kernel extension mechanism
 
 Different operating systems have different names for such extensions as for example kernel-mode driver (Windows), kernel extension (OS X) or loadable kernel module (Linux). Because we develop a Linux rootkit we use the term kernel module in the following. 
 
-A kernel module in its simplest form is nothing more than a piece of code, usually written in the C programming language that can be loaded into kernel space at runtime. It has a setup and a exit function which are called if the module is loaded or unloaded. Listing \ref{simple} gives an example of a very simple kernel module. The only thing it does it logs "Hello world" to the system log on when loaded and "Goodby world" when unloaded.
+A kernel module in its simplest form is nothing more than a piece of code, usually written in the C programming language that can be loaded into kernel space at runtime. It has a setup and a exit function which are called if the module is loaded or unloaded. Listing \ref{simple} gives an example of a very simple kernel module. The only thing it does it logs "Hello world" to the system log when loaded and "Goodby world" when unloaded.
 
 \begin{lstlisting}[caption=Source: \url{http://www.tldp.org/LDP/lkmpg/2.6/html/x121.html}., label=simple]
 
@@ -120,15 +120,15 @@ void cleanup_module(void)
 
 \end{lstlisting}
 
-All code inside a kernel module is run in the context of the kernel and therefore can do anything possible on your computer, without any protection. That means even something as small as a single bad pointer could possibly wipe your hard drive. Another difference that has to be mentioned is that you don't use the usual C standard lib but code that is exported by the kernel itself. 
+All the code inside a kernel module is run in the context of the kernel and therefore can do anything possible on your computer, without any protection. That means even something as small as a single bad pointer could possibly wipe your hard drive. Another difference that has to be mentioned is that you don't use the usual C standard lib but code that is exported by the kernel itself. 
 
-In the implementation section we will use a kernel module to implement our rootkit.
+In the implementation section we will use a kernel module to implement our rootkit, because we want to have full control over the compromised system.
 
 \section{Implementation}
 \label{sec:impl}
 
 \subsection{Hiding}
-As already mention in the introduction a rootkit should mask its existence as good as possible to prevent the detection of the possible malicious operations. Although a kernel module is not visible as a process on the system it can be easily revealed via the \shellcmdinline{lsmod} command, which lists all currently loaded kernel modules. To prevent our module from the most obvious way of detection we want to hide it from \shellcmdinline{lsmod}. 
+As already mention in the introduction a rootkit should mask its existence as good as possible to prevent the detection of the possibly malicious operations. Although a kernel module is not visible as a process on the system it can be easily revealed via the \shellcmdinline{lsmod} command, which lists all currently loaded kernel modules. To prevent our module from the most obvious way of detection we want to hide it from \shellcmdinline{lsmod}. 
 
 This sounds hard at first but it is rather easy. We can use the special exported symbol \texttt{extern struct module \_\_this\_module;} which points to the module we are currently in. The module structure, see Listing \ref{module}, has a field \texttt{list} that points to the list of all modules. 
 
