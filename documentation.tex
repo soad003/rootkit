@@ -87,6 +87,7 @@ In the following we want to explore how to make a linux kernel rootkit. As the d
 \subsection{Kernel Rootkits}
 
 \section{Implementation}
+
 \subsection{Keylogging}
 This section deals about keylogging in linux kernel. Keylogging describes the process of intercepting all inputkeys from a keyboard. Our rootkit intercepts all keys and sends them to a server. It is possible to activate and deactivate the keylogging function with a magic package, see \ref{sec:magicpackage}. 
 To implement a keylogger in the linux kernel you must register a keyboard notifier.
