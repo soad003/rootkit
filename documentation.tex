@@ -190,7 +190,7 @@ void start_remote_shell(void){
 
 \newpage
 \subsection{Keylogging}
-This section deals with keylogging in the linux kernel. Keylogging describes the process of intercepting all inputkeys, this includes also all passwords, usernames or bank account informations assuming the user ented this information, from a keyboard.  Our rootkit intercepts all keys and sends them to the attacker. To make it harder to detect the rootkit with the keylogging function it is possible to activate and deactivate it with magic packages, see \ref{sec:magicpackage}.  \newline
+This section deals with keylogging in the linux kernel. Keylogging describes the process of intercepting all input-keys, this includes also all passwords, usernames or bank account informations assuming the user entered this information, from a keyboard.  Our rootkit intercepts all keys and sends them to the attacker. To make it harder to detect the rootkit with the keylogging function it is possible to activate and deactivate it with magic packets, see \ref{sec:magicpackage}.  \newline
 The linux kernel already provides a method to intercept all keys, to use this implementation it is necessary to include the keyboard header and define a new \lstinline{struct notifier_block keyboard_notifier}, see Listing \ref{includeKey}.
 
 \begin{lstlisting}[caption=Keyboard header., label=includeKey]
@@ -205,7 +205,7 @@ int keyboard_hook(struct notifier_block *, unsigned long code, void *);
 
 
 The keyboard notifier stores the \lstinline{keyboard_hook} method which will be called on each key press. This function gets a keyboard keycode as input, to filter out the associated character we use two arrays with the mapping for the American keyboard layout. The first one is the mapping without \lstinline{SHIFT} and the second is with \lstinline{SHIFT} pressed.
-To inform the linux kernel to add or remove our notifier to the notification list for any keyboard event, we have to register or unregister the keyboard notifier, see Listing \ref{registerKeyboard}. We do that we the kernel module is loaded or unloaded function.
+To inform the linux kernel to add or remove our notifier to the notification list for any keyboard event, we have to register or unregister the keyboard notifier, see Listing \ref{registerKeyboard}. We do that when the kernel module is loaded or unloaded.
 
 
 \begin{lstlisting}[caption=Register Keyboard, label=registerKeyboard]
@@ -216,15 +216,15 @@ unregister_keyboard_notifier(&keyboard_notifier);
 
 
 \subsection{Networking and Activation}
-The rootkit runs without being detected on a client. And we don't wanna attrackt attention in collection all log files with physical presence at the clients home. Therefore we do that over the network. We used socalled magic packages for the activation and deactivation of a service. A magic package should be a package which is hard to detect. Our magic packages are normal ping request with the individuality that the id is the same as the code. And if we intercept a magic package we compare the codes with our fixed codes for the different options.
+In the best case our rootkit should run without being detected and without leaving any traces on the attacked system. To do so we don't log keystrokes to file but send them over the network. We used so called magic packets for the activation and deactivation of a service. A magic packet should be a packet which is hard to detect or in other words a packet that is not easily distinguishable from normal packets. Our magic packets are normal ping request with the anomaly that the icmp header field id is equal to the icmp code field. If we intercept a magic packet we compare the code with our predefined de/activation codes.
 \label{sec:magicpackage}
-\newline To communicate with the rootkit two methods are used.
+\newline Communication-wise two different types of packets are used.
 \begin{itemize}
-	\item ICMP Packages
-	\item UDP Sockets
+	\item ICMP Packets (for the activation packets)
+	\item UDP Sockets (sending keystrokes)
 \end{itemize}
-\subsubsection{ICMP Packages}
-Magic packages can activate(deactivate) the keylogger, hide(unhide) the rootkit module or open a backdoor shell with root access. The following values are used for code and id to assign the descried functionality.
+\subsubsection{ICMP Packets}
+Magic packets can activate(deactivate) the keylogger, hide(unhide) the rootkit module or open a backdoor shell with root access. The following values are used for code and id to assign the desired functionality.
 \begin{itemize}
 	\item[122:] \lstinline{KEYLOGGER_ACTIVATION_CODE}
 	\item[123:] \lstinline{KEYLOGGER_DEACTIVATION_CODE}
@@ -235,7 +235,7 @@ Magic packages can activate(deactivate) the keylogger, hide(unhide) the rootkit 
 
 
 
-To catch the packages a new \lstinline{netfilter_hook} is added with the netfilter libary, see Listing \ref{netfilter}. 
+To intercept the packets a new \lstinline{netfilter_hook} is added with the netfilter library, see Listing \ref{netfilter}. 
 \begin{lstlisting}[caption=Netfilter Hook, label=netfilter]
 #include <linux/netfilter.h>
 #include <linux/netfilter_ipv4.h>
@@ -254,10 +254,10 @@ nf_register_hook(&netfilter_hook);
 
 \end{lstlisting}
 
-The netfilter hook catches all ip packages. To get ping packages the icmp packages are unpacked for the ip message. For the evaluation only packages with the already defined properties are used.
+The netfilter hook catches all IP packets. To get ping packets only the icmp packets are unpacked form the IP messages. For the evaluation only packets with the already defined properties are used (id==code).
 
 \subsubsection{UPD Sockets}
-For sending the keys to the client and for controlling the server with the backdoor shell, UPD datagram packages are used.
+To send the keys to the attacker UPD datagram packets are used.
 
 \section{Usage}
 \label{sec:usage}
