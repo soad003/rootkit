@@ -123,7 +123,7 @@ void cleanup_module(void)
 All the code inside a kernel module is run in the context of the kernel and therefore it can do anything possible on your computer, without any protection. That means even something as small as a single bad pointer could possibly wipe your hard drive. Another difference that has to be mentioned is that you don't use the usual C standard lib but code that is exported by the kernel itself. 
 
 In the implementation section we will use a kernel module to implement our rootkit, because we want to have full control over the compromised system.
-
+\newpage
 \section{Implementation}
 \label{sec:impl}
 
@@ -188,7 +188,6 @@ void start_remote_shell(void){
 
 
 
-\newpage
 \subsection{Keylogging}
 This section deals with keylogging in the linux kernel. Keylogging describes the process of intercepting all inputkeys, this includes also all passwords, usernames or bank account informations assuming the user ented this information, from a keyboard.  Our rootkit intercepts all keys and sends them to the attacker. To make it harder to detect the rootkit with the keylogging function it is possible to activate and deactivate it with magic packages, see \ref{sec:magicpackage}.  \newline
 The linux kernel already provides a method to intercept all keys, to use this implementation it is necessary to include the keyboard header and define a new \lstinline{struct notifier_block keyboard_notifier}, see Listing \ref{includeKey}.
@@ -259,6 +258,7 @@ The netfilter hook catches all ip packages. To get ping packages the icmp packag
 \subsubsection{UPD Sockets}
 For sending the keys to the client and for controlling the server with the backdoor shell, UPD datagram packages are used.
 
+\newpage
 \section{Usage}
 \label{sec:usage}
 This section describes how to setup the rootkit and how to use the client application.
@@ -269,7 +269,7 @@ The rootkit can be build via \shellcmdinline{make}. To install it execute \shell
 \subsection{Client}
 The to start one of the possible operation on our infected system use \shellcmd{rootkit\_client.py~-[a,d]~<feature-key>~-h~<host>} Three different features can be controlled via the feature-keys \emph{key} (keylogger), \emph{hide} (hide the kernel module) and \emph{root} (backdoor/root access). To activate a feature use the option \shellcmdinline{-a} and \shellcmdinline{-d} to deactivate a feature. The root feature is the only feature that has no deactivation because it can be easily be done via the shell itself. The root feature only starts the backdoor on a certain host. To connect to it use the usual suspects e.g. \shellcmdinline\shellcmdinline{nc <host> 6666}.
 
-
+\newpage
 \section{Conclusion}
 
 With some basic knowledge of the linux kernel, Google and some time it is possible to develop a simple rootkit for linux. Backdoor and keylogging is also rather trivial if you don't spend to much effort handling error situations or edge cases. The same goes for hiding. But if you want a bullet proof solution that works in every situation, on every machine and does not reveal itself you gonna have a hard time. 
