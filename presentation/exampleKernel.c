@@ -8,3 +8,10 @@ int init_module(void){
 void cleanup_module(void){
 	printk(KERN_INFO "Goodbye world 1.\n");
 }
+
+module_init(init_module);
+module_exit(cleanup_module);
+
+MODULE_LICENSE("GPL");
+
+

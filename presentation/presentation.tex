@@ -78,7 +78,7 @@
     \item General: Rootkit
     \begin{itemize}
     \item Software
-    \item Root privilegs
+    \item Root privileges
     \item Masking existence
     \end{itemize}
     \item Our tool: Linux kernel rootkit
@@ -120,7 +120,7 @@
   \begin{itemize}
     \item Mask existence
     \begin{itemize}
-      \item Kernel moduls not visible as a process
+      \item Kernel modules not visible as a process
     \end{itemize}
     \item \shellcmdinline{lsmod}
     \begin{itemize}
@@ -136,7 +136,7 @@
 
 \begin{frame}[t]{Backdoor}
   \begin{itemize}
-    \item Spaning userland process
+    \item Spanning userland process
     \begin{itemize}
       \item \shellcmdinline{netcat -l -p 6666 -e /bin/sh}
       \item \shellcmdinline{call\_usermodehelper}
@@ -168,22 +168,13 @@
 
 \begin{frame}[t]{Networking and Activation}
   \begin{itemize}
-    \item Magic Packages
+    \item Magic Packet
     \begin{itemize}
       \item Ping Request where \lstinline{ID == Code}
-      \begin{itemize}
-        \item[122:] \lstinline{KEYLOGGER_ACTIVATION_CODE}
-        \item[123:] \lstinline{KEYLOGGER_DEACTIVATION_CODE}
-        \item[124:] \lstinline{HIDEMODULE_ACTIVATION_CODE}
-        \item[125:] \lstinline{HIDEMODULE_DEACTIVATION_CODE}
-        \item[126:] \lstinline{BACKDOOR_ACTIVATION_CODE}
-      \end{itemize}
+      \item Used codes: 122 - 126
+      \item Nethook API
     \end{itemize}
-    \item Backdoor communication
-    \begin{itemize}
-      \item UDP datagram socket
-    \end{itemize}
-    \item Sending key charaters
+    \item Sending key characters
     \begin{itemize}
       \item UDP datagram socket
     \end{itemize}
@@ -208,7 +199,7 @@
 \begin{frame}[t]{Summary}
 \begin{itemize}
   \item Simple rootkit: easy
-  \item Perfekt rootkit: very hard
+  \item Perfect rootkit: very hard
 \end{itemize}
 \end{frame}
 

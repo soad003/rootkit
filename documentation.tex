@@ -118,6 +118,9 @@ void cleanup_module(void)
 	printk(KERN_INFO "Goodbye world 1.\n");
 }
 
+module_init(init_module);
+module_exit(cleanup_module);
+
 \end{lstlisting}
 
 All the code inside a kernel module is run in the context of the kernel and therefore it can do anything possible on your computer, without any protection. That means even something as small as a single bad pointer could possibly wipe your hard drive. Another difference that has to be mentioned is that you don't use the usual C standard lib but code that is exported by the kernel itself. 
