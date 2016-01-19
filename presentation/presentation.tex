@@ -8,6 +8,7 @@
           ]{Torino}
 \usepackage{hyperref}
 \usepackage{listings}
+\usepackage{tikz}
 
 
 \newcommand{\shellcmd}[1]{\\\indent\indent\texttt{\footnotesize\ #1}\\}
@@ -37,7 +38,7 @@
 \definecolor{mygray}{rgb}{0.5,0.5,0.5}
 \definecolor{mymauve}{rgb}{0.58,0,0.82}
 
-\lstset{ %
+\lstdefinestyle{lststyle}{ %
   backgroundcolor=\color{white},   % choose the background color
   basicstyle=\footnotesize,        % size of fonts used for the code
   breaklines=true,                 % automatic line breaking only at whitespace
@@ -46,8 +47,13 @@
   escapeinside={\%*}{*)},          % if you want to add LaTeX within your code
   keywordstyle=\color{blue},       % keyword style
   stringstyle=\color{mymauve},      % string literal style
-  language=C
-}
+  language=C,
+  numbers=left,
+  basicstyle=\lst@ifdisplaystyle\tiny\fi,
+  xleftmargin=20pt
+  }
+
+\lstset{style=lststyle}
 
 \author{Clemens Brunner\\Michael Fr\"owis}
 \institute{clemens.brunner@student.uibk.ac.at \\ michael.froewis@student.uibk.ac.at}
@@ -142,7 +148,7 @@
       \item \shellcmdinline{call\_usermodehelper}
     \end{itemize}
   \end{itemize}
-  \lstinputlisting{backdoor.c}
+       \lstinline{backdoor.c}
 \end{frame}
 
 
@@ -201,6 +207,23 @@
   \item Simple rootkit: easy
   \item Perfect rootkit: very hard
 \end{itemize}
+\end{frame}
+
+\begin{frame}[t]{Bibliography}
+\nocite{a1}
+\nocite{b2}
+\nocite{c3}
+\nocite{d4}
+\nocite{e5}
+\nocite{f6}
+
+\begingroup
+\tiny
+\bibliography{biblio}{}
+\bibliographystyle{plain}
+
+
+\endgroup
 \end{frame}
 
 \end{document}
