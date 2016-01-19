@@ -1,0 +1,59 @@
+This is BibTeX, Version 0.99d (TeX Live 2013/Debian)
+Capacity: max_strings=35307, hash_size=35307, hash_prime=30011
+The top-level auxiliary file: presentation.aux
+The style file: plain.bst
+Database file #1: biblio.bib
+Warning--entry type for "a1" isn't style-file defined
+--line 1 of file biblio.bib
+Warning--entry type for "b2" isn't style-file defined
+--line 8 of file biblio.bib
+Warning--entry type for "c3" isn't style-file defined
+--line 15 of file biblio.bib
+Warning--entry type for "d4" isn't style-file defined
+--line 22 of file biblio.bib
+Warning--entry type for "e5" isn't style-file defined
+--line 29 of file biblio.bib
+Warning--entry type for "f6" isn't style-file defined
+--line 36 of file biblio.bib
+You've used 6 entries,
+            2118 wiz_defined-function locations,
+            516 strings with 4312 characters,
+and the built_in function-call counts, 1202 in all, are:
+= -- 102
+> -- 42
+< -- 0
++ -- 18
+- -- 12
+* -- 38
+:= -- 201
+add.period$ -- 12
+call.type$ -- 6
+change.case$ -- 24
+chr.to.int$ -- 0
+cite$ -- 6
+duplicate$ -- 42
+empty$ -- 133
+format.name$ -- 12
+if$ -- 259
+int.to.chr$ -- 0
+int.to.str$ -- 6
+missing$ -- 0
+newline$ -- 27
+num.names$ -- 12
+pop$ -- 54
+preamble$ -- 1
+purify$ -- 18
+quote$ -- 0
+skip$ -- 48
+stack$ -- 0
+substring$ -- 30
+swap$ -- 6
+text.length$ -- 0
+text.prefix$ -- 0
+top$ -- 0
+type$ -- 24
+warning$ -- 0
+while$ -- 12
+width$ -- 7
+write$ -- 50
+(There were 6 warnings)

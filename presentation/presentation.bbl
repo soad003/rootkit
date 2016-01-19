@@ -1,0 +1,28 @@
+\begin{thebibliography}{1}
+
+\bibitem{d4}
+Dan Goodin.
+\newblock Gpu-based rootkit and keylogger offer superior stealth and computing
+  power, 2015.
+
+\bibitem{a1}
+Serge Malenkovich.
+\newblock Was ist ein rootkit?, 2013.
+
+\bibitem{f6}
+Morgan Phillips.
+\newblock How to: Building your own kernel space keylogger, 2014.
+
+\bibitem{e5}
+Unknown.
+\newblock How to: Building your own kernel space keylogger, 2010.
+
+\bibitem{c3}
+Unknown.
+\newblock Kernelmode rootkits: Part 3, kernel filters, 2014.
+
+\bibitem{b2}
+Unknown.
+\newblock Part 1: Stealing keyboard keys for fun & profit, 2014.
+
+\end{thebibliography}

@@ -1,0 +1,10 @@
+\beamer@endinputifotherversion {3.24pt}
+\beamer@sectionintoc {1}{Introduction}{3}{0}{1}
+\beamer@subsectionintoc {1}{1}{Kernel Modules}{5}{0}{1}
+\beamer@sectionintoc {2}{Implementation}{6}{0}{2}
+\beamer@subsectionintoc {2}{1}{Hiding}{7}{0}{2}
+\beamer@subsectionintoc {2}{2}{Backdoor}{8}{0}{2}
+\beamer@subsectionintoc {2}{3}{Keylogging}{9}{0}{2}
+\beamer@subsectionintoc {2}{4}{Networking and Activation}{10}{0}{2}
+\beamer@sectionintoc {3}{Livedemo}{11}{0}{3}
+\beamer@sectionintoc {4}{Summary}{13}{0}{4}
