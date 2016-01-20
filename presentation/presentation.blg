@@ -1,4 +1,4 @@
-This is BibTeX, Version 0.99d (TeX Live 2013/Debian)
+This is BibTeX, Version 0.99d (TeX Live 2014)
 Capacity: max_strings=35307, hash_size=35307, hash_prime=30011
 The top-level auxiliary file: presentation.aux
 The style file: plain.bst
@@ -17,7 +17,7 @@ Warning--entry type for "f6" isn't style-file defined
 --line 36 of file biblio.bib
 You've used 6 entries,
             2118 wiz_defined-function locations,
-            516 strings with 4312 characters,
+            516 strings with 4313 characters,
 and the built_in function-call counts, 1202 in all, are:
 = -- 102
 > -- 42
