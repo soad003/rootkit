@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.1415926-2.5-1.40.14 (TeX Live 2013/Debian) (format=pdflatex 2015.4.9)  18 JAN 2016 14:53
+This is pdfTeX, Version 3.1415926-2.5-1.40.14 (TeX Live 2013/Debian) (format=pdflatex 2015.4.9)  19 JAN 2016 18:18
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -752,28 +752,21 @@ Overfull \hbox (2.96631pt too wide) in paragraph at lines 229--231
 unhide) the rootkit
  []
 
-[8] [9] [10]
-Package atveryend Info: Empty hook `BeforeClearDocument' on input line 286.
+[8] [9] [10] (./documentation.bbl)
+Package atveryend Info: Empty hook `BeforeClearDocument' on input line 297.
  [11]
-Package atveryend Info: Empty hook `AfterLastShipout' on input line 286.
+Package atveryend Info: Empty hook `AfterLastShipout' on input line 297.
  (./documentation.aux)
-Package atveryend Info: Executing hook `AtVeryEndDocument' on input line 286.
-Package atveryend Info: Executing hook `AtEndAfterFileList' on input line 286.
-
-
-Package rerunfilecheck Warning: File `documentation.out' has changed.
-(rerunfilecheck)                Rerun to get outlines right
-(rerunfilecheck)                or use package `bookmark'.
-
-Package rerunfilecheck Info: Checksums for `documentation.out':
-(rerunfilecheck)             Before: 8FC49FA551B648F8B1AE2B02901A0F91;817
-(rerunfilecheck)             After:  BD42B9A8E3BFBD83F732C0D6881B5DC8;816.
+Package atveryend Info: Executing hook `AtVeryEndDocument' on input line 297.
+Package atveryend Info: Executing hook `AtEndAfterFileList' on input line 297.
+Package rerunfilecheck Info: File `documentation.out' has not changed.
+(rerunfilecheck)             Checksum: BD42B9A8E3BFBD83F732C0D6881B5DC8;816.
  ) 
 Here is how much of TeX's memory you used:
- 10633 strings out of 494976
- 147732 string characters out of 6179138
+ 10649 strings out of 494976
+ 147848 string characters out of 6179138
  313459 words of memory out of 5000000
- 13578 multiletter control sequences out of 15000+600000
+ 13584 multiletter control sequences out of 15000+600000
  68734 words of font info for 68 fonts, out of 8000000 for 9000
  14 hyphenation exceptions out of 8191
  30i,6n,49p,881b,1939s stack positions out of 5000i,500n,10000p,200000b,80000s
@@ -785,10 +778,10 @@ exmf/fonts/type1/public/lm/lmr17.pfb></usr/share/texmf/fonts/type1/public/lm/lm
 ri12.pfb></usr/share/texmf/fonts/type1/public/lm/lmsy10.pfb></usr/share/texmf/f
 onts/type1/public/lm/lmtt10.pfb></usr/share/texmf/fonts/type1/public/lm/lmtt12.
 pfb>
-Output written on documentation.pdf (11 pages, 228135 bytes).
+Output written on documentation.pdf (11 pages, 229607 bytes).
 PDF statistics:
- 292 PDF objects out of 1000 (max. 8388607)
- 266 compressed objects within 3 object streams
- 113 named destinations out of 1000 (max. 500000)
+ 300 PDF objects out of 1000 (max. 8388607)
+ 274 compressed objects within 3 object streams
+ 120 named destinations out of 1000 (max. 500000)
  113 words of extra memory for PDF output out of 10000 (max. 10000000)
 

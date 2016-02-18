@@ -281,7 +281,18 @@ With some basic knowledge of the linux kernel, Google and some time it is possib
 \subsection{Possible Improvements}
 As in every project there is room for improvements for example:
 
-We only prevent the rootkit detection via \shellcmdinline{lsmod} and equivalent commands but there are other methods to detect rootkits e.g. network activity, changes in the system call table and so on. The implementation of the backdoor should be improved. It needs a specific version of \shellcmdinline{netcat} (-e option) to be installed. The invocation of the userland \shellcmdinline{netcat} process from the kernel is not very reliable and needs to be revisited. And the worst part is that the new netcat process is visible to every user and needs to be hidden.  
+We only prevent the rootkit detection via \shellcmdinline{lsmod} and equivalent commands but there are other methods to detect rootkits e.g. network activity, changes in the system call table and so on. The implementation of the backdoor should be improved. It needs a specific version of \shellcmdinline{netcat} (-e option) to be installed. The invocation of the userland \shellcmdinline{netcat} process from the kernel is not very reliable and needs to be revisited. And the worst part is that the new netcat process is visible to every user and needs to be hidden.
+
+\nocite{a1}
+\nocite{b2}
+\nocite{c3}
+\nocite{d4}
+\nocite{e5}
+\nocite{f6}
+
+
+\bibliography{biblio}{}
+\bibliographystyle{plain}
 
 \end{document}
 
