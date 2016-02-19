@@ -204,7 +204,7 @@ int keyboard_hook(struct notifier_block *, unsigned long code, void *);
 \end{lstlisting}
 
 
-The keyboard notifier stores the \lstinline{keyboard_hook} method which will be called on each key press. This function gets a keyboard keycode as input, to filter out the associated character we use two arrays with the mapping for the American keyboard layout. The first one is the mapping without \lstinline{SHIFT} and the second is with \lstinline{SHIFT} pressed.
+The keyboard notifier stores the \lstinline{keyboard_hook} method which will be called on each key press. This function gets a keyboard keycode as input, to filter out the associated character we use two arrays with the mapping for the American keyboard layout. The first one is the mapping without \lstinline{SHIFT} and the second is with \lstinline{SHIFT} pressed. The keylogger of the described rootkit does not work with a german keyboard layout, because the mapping from keycodes to characters is fixed for the characters of the american keyboard layout. 
 To inform the linux kernel to add or remove our notifier to the notification list for any keyboard event, we have to register or unregister the keyboard notifier, see Listing \ref{registerKeyboard}. We do that when the kernel module is loaded or unloaded.
 
 
@@ -226,7 +226,7 @@ Ideally our rootkit runs without being detected and without leaving any traces o
 \subsubsection{ICMP Packets}
 Magic packets can activate (deactivate) the keylogger, hide (unhide) the rootkit module or open a backdoor shell with root access. The following values are used in the code to identify the desired functionality: 122 - activate keylogger, 123 - deactivate keylogger, 124 - hide module, 125 - unhide module, 126 - open backdoor.
 
-To intercept the packets a new \lstinline{netfilter_hook} is added with the netfilter library, see Listing \ref{netfilter}. 
+To intercept the packets a new \lstinline{netfilter_hook} is added with the netfilter library, see Listing \ref{netfilter}. \cite{f7}
 \begin{lstlisting}[caption=Netfilter Hook, label=netfilter]
 #include <linux/netfilter.h>
 #include <linux/netfilter_ipv4.h>
