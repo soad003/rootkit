@@ -204,7 +204,7 @@ int keyboard_hook(struct notifier_block *, unsigned long code, void *);
 \end{lstlisting}
 
 
-The keyboard notifier stores the \lstinline{keyboard_hook} method which will be called on each key press. This function gets a keyboard keycode as input, to filter out the associated character we use two arrays with the mapping for the American keyboard layout. The first one is the mapping without \lstinline{SHIFT} and the second is with \lstinline{SHIFT} pressed. The keylogger of the described rootkit does not work with a german keyboard layout, because the mapping from keycodes to characters is fixed for the characters of the american keyboard layout. 
+The keyboard notifier stores the \lstinline{keyboard_hook} method which will be called on each key press. This function gets a keyboard keycode as input, to filter out the associated character we use two arrays with the mapping for the American keyboard layout. The first one is the mapping without \lstinline{SHIFT} and the second is with \lstinline{SHIFT} pressed. The keylogger of the described rootkit does not work with a german keyboard layout, because the mapping from keycodes to characters is fixed for the characters of the American keyboard layout. 
 To inform the linux kernel to add or remove our notifier to the notification list for any keyboard event, we have to register or unregister the keyboard notifier, see Listing \ref{registerKeyboard}. We do that when the kernel module is loaded or unloaded.
 
 
@@ -242,10 +242,10 @@ nf_register_hook(&netfilter_hook);
 nf_register_hook(&netfilter_hook);
 \end{lstlisting}
 
-The netfilter hook catches all IP packets. To detect ping packets only the ICMP packets need to be unpacked from the IP messages. Pings are just a special kind of ICMP packets namly ICMP echo requests (type 8).  For the evaluation only packets with the already defined properties are used (id==code).
+The netfilter hook catches all IP packets. To detect ping packets only the ICMP packets need to be unpacked from the IP messages. Pings are just a special kind of ICMP packets namely ICMP echo requests (type 8).  For the evaluation only packets with the already defined properties are used (id==code).
 
-\subsubsection{UDP Sockets}
-To send the keys to the attacker UPD datagram packets are used. We used UDP because it is connectionless and if packets are lost, we do not want to ask for resending. For details about UDP read Section 6.9 in the book called 'Informatik Handbuch' \cite{rechenberg1997informatik}.
+\subsubsection{Keylogging over UDP}
+To send the keys to the attacker UDP datagram packets are used. We used UDP because it is connectionless and easy to use. That means we do not need a permanent connection opened to our command and control host. For details about UDP read Section 6.9 in \cite{rechenberg1997informatik}.
 
 \newpage
 \section{Usage}
